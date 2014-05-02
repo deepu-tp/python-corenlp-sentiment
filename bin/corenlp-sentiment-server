@@ -1,0 +1,38 @@
+from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
+from corenlp_sentiment import StanfordCoreNLPSentimentServer
+import optparse
+import os
+
+
+if os.environ.has_key("CORENLP"):
+    DIRECTORY = os.environ["CORENLP"]
+else:
+    DIRECTORY = "stanford-corenlp-full-2014-01-04"
+
+
+if __name__ == '__main__':
+    """
+    The code below starts an JSONRPC server
+    """
+    parser = optparse.OptionParser(usage="%prog [OPTIONS]")
+    parser.add_option('-p', '--port', default='8080',
+                      help='Port to serve on (default 8080)')
+    parser.add_option('-H', '--host', default='127.0.0.1',
+                      help='Host to serve on (default localhost; 0.0.0.0 to make public)')
+    parser.add_option('-S', '--corenlp', default=DIRECTORY,
+                      help='Stanford CoreNLP tool directory (default %s)' % DIRECTORY)
+
+    options, args = parser.parse_args()
+    try:
+        server = SimpleJSONRPCServer((options.host, int(options.port)))
+
+        nlp = StanfordCoreNLPSentimentServer(options.corenlp)
+
+        server.register_function(nlp.parse)
+
+        print 'Serving on http://%s:%s' % (options.host, options.port)
+        # server.serve()
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print >>sys.stderr, "Bye."
+        exit()
