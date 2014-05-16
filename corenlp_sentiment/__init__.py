@@ -46,7 +46,7 @@ class StanfordCoreNLPSentimentServer:
     """
 
     def _spawn_corenlp(self):
-        self.corenlp = pexpect.spawn(self.start_corenlp, timeout=60,
+        self.corenlp = pexpect.spawn(self.start_corenlp, timeout=5,
                                      maxread=8192, searchwindowsize=80)
 
         self.corenlp.expect("reached.")
@@ -83,8 +83,15 @@ class StanfordCoreNLPSentimentServer:
         with one dictionary entry for each parsed sentence.
         """
         self.corenlp.sendline(text)
-        self.corenlp.expect("\r\n  ")
-        return self.corenlp.readline().strip()
+        try:
+            self.corenlp.expect("\r\n  ")
+        except Exception as e:
+            print e
+            pass
+
+        data = self.corenlp.readline().strip()
+        return data
+
 
 
 class StanfordNLPSentimentClient:
